@@ -7,22 +7,57 @@ const searchInput = document.querySelector("#search-input");
 const errorMessage = document.querySelector("#error-message");
 const noteCount = document.querySelector("#note-count");
 
-// Store notes as objects in an array.
-let notes = [];
+const STORAGE_KEY = "quicknotes";
 
-// Display notes on the page.
+// Load saved notes from localStorage.
+function loadNotes() {
+  try {
+    const savedNotes = localStorage.getItem(STORAGE_KEY);
+    const parsedNotes = savedNotes ? JSON.parse(savedNotes) : [];
+
+    return Array.isArray(parsedNotes) ? parsedNotes : [];
+  } catch (error) {
+    console.error("Could not load saved notes:", error);
+    return [];
+  }
+}
+
+// Store the current notes in localStorage.
+function saveNotes() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  } catch (error) {
+    console.error("Could not save notes:", error);
+    errorMessage.textContent = "Unable to save notes in this browser.";
+  }
+}
+
+// Keep notes in an array.
+let notes = loadNotes();
+
+// Display notes and update the total count.
 function renderNotes(notesToDisplay = notes) {
   notesList.replaceChildren();
 
-  notesToDisplay.forEach(function (note) {
-      if (notes.length === 0) {
+  if (notes.length === 0) {
     noteCount.textContent = "You have no notes yet.";
   } else if (notes.length === 1) {
     noteCount.textContent = "You have 1 note.";
   } else {
     noteCount.textContent = `You have ${notes.length} notes.`;
   }
+
+  // Show a message when a search has no matches.
+  if (notesToDisplay.length === 0 && searchInput.value.trim() !== "") {
+    const message = document.createElement("li");
+    message.textContent = "No notes match your search.";
+    notesList.appendChild(message);
+    return;
+  }
+
+  notesToDisplay.forEach(function (note) {
     const noteCard = document.createElement("li");
+
     noteCard.classList.add(
       `category-${note.category.toLowerCase()}`
     );
@@ -37,17 +72,18 @@ function renderNotes(notesToDisplay = notes) {
     const createdDate = document.createElement("small");
     createdDate.textContent = `Created: ${note.createdAt}`;
 
-   const deleteButton = document.createElement("button");
-deleteButton.type = "button";
-deleteButton.textContent = "Delete";
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.textContent = "Delete";
 
-deleteButton.addEventListener("click", function () {
-  notes = notes.filter(function (item) {
-    return item.id !== note.id;
-  });
+    deleteButton.addEventListener("click", function () {
+      notes = notes.filter(function (item) {
+        return item.id !== note.id;
+      });
 
-  renderNotes();
-});
+      saveNotes();
+      renderNotes(getFilteredNotes());
+    });
 
     noteCard.append(
       noteText,
@@ -62,24 +98,34 @@ deleteButton.addEventListener("click", function () {
   });
 }
 
+// Return notes that match the search text.
+function getFilteredNotes() {
+  const searchTerm = searchInput.value.trim().toLowerCase();
+
+  return notes.filter(function (note) {
+    return note.text.toLowerCase().includes(searchTerm);
+  });
+}
+
 // Add a new note.
 noteForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
-const text = noteInput.value.trim();
+  const text = noteInput.value.trim();
 
-if (text === "") {
-  errorMessage.textContent = "Please enter a note before adding.";
-  return;
-}
+  if (text === "") {
+    errorMessage.textContent = "Please enter a note before adding.";
+    return;
+  }
 
-if (text.length > 200) {
-  errorMessage.textContent = "Your note must be 200 characters or fewer.";
-  return;
-}
+  if (text.length > 200) {
+    errorMessage.textContent =
+      "Your note must be 200 characters or fewer.";
+    return;
+  }
 
-const newNote = {
-    id: Date.now().toString(),
+  const newNote = {
+    id: crypto.randomUUID(),
     text: text,
     category: noteCategory.value,
     createdAt: new Date().toLocaleString()
@@ -87,8 +133,18 @@ const newNote = {
 
   notes.push(newNote);
 
-  renderNotes();
+  saveNotes();
 
   noteInput.value = "";
   errorMessage.textContent = "";
+
+  renderNotes(getFilteredNotes());
 });
+
+// Search as the user types.
+searchInput.addEventListener("input", function () {
+  renderNotes(getFilteredNotes());
+});
+
+// Display saved notes when the page loads.
+renderNotes();
