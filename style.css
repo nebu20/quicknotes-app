@@ -1,5 +1,5 @@
 
-/* Reset: make element dimensions predictable */
+/* Reset */
 * {
   box-sizing: border-box;
 }
@@ -12,7 +12,7 @@ body {
   color: #263238;
 }
 
-/* Page header */
+/* Header */
 header {
   padding: 2rem 1rem;
   text-align: center;
@@ -29,14 +29,14 @@ header p {
   margin: 0.5rem 0 0;
 }
 
-/* Main content column */
+/* Main content */
 main {
   max-width: 700px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
 
-/* Individual sections */
+/* Sections */
 section {
   margin-bottom: 1.5rem;
   padding: 1.5rem;
@@ -51,7 +51,7 @@ section h2 {
   color: #176b65;
 }
 
-/* Form layout */
+/* Form */
 #note-form {
   display: flex;
   align-items: flex-end;
@@ -114,6 +114,16 @@ button:hover {
   color: #52636b;
 }
 
+/* Clear all button */
+#clear-all-button {
+  background-color: #a32632;
+  border-color: #a32632;
+}
+
+#clear-all-button:hover {
+  background-color: #7d1c25;
+}
+
 /* Error message */
 #error-message {
   margin-bottom: 0;
@@ -128,7 +138,6 @@ button:hover {
   list-style: none;
 }
 
-/* Note cards */
 #notes-list li {
   margin-bottom: 1rem;
   padding: 1rem;
@@ -142,7 +151,7 @@ button:hover {
   margin: 0.5rem 0;
 }
 
-/* Category-specific card colors */
+/* Category colours */
 .category-personal {
   border-left-color: #00897b !important;
 }
@@ -155,7 +164,7 @@ button:hover {
   border-left-color: #1976d2 !important;
 }
 
-/* Small category labels */
+/* Category labels */
 .category-label {
   display: inline-block;
   padding: 0.15rem 0.5rem;
@@ -172,7 +181,7 @@ footer {
   color: #52636b;
 }
 
-/* Responsive layout for phones */
+/* Responsive layout */
 @media (max-width: 600px) {
   header {
     padding: 1.5rem 1rem;
@@ -199,7 +208,8 @@ footer {
     width: 100%;
   }
 
-  #note-form button {
+  #note-form button,
+  #clear-all-button {
     width: 100%;
   }
 }

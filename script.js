@@ -6,6 +6,7 @@ const notesList = document.querySelector("#notes-list");
 const searchInput = document.querySelector("#search-input");
 const errorMessage = document.querySelector("#error-message");
 const noteCount = document.querySelector("#note-count");
+const clearAllButton = document.querySelector("#clear-all-button");
 
 const STORAGE_KEY = "quicknotes";
 
@@ -22,23 +23,22 @@ function loadNotes() {
   }
 }
 
-// Store the current notes in localStorage.
+// Save notes to localStorage.
 function saveNotes() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
   } catch (error) {
     console.error("Could not save notes:", error);
-    errorMessage.textContent = "Unable to save notes in this browser.";
+    errorMessage.textContent =
+      "Unable to save notes in this browser.";
   }
 }
 
-// Keep notes in an array.
+// Store notes in an array.
 let notes = loadNotes();
 
-// Display notes and update the total count.
-function renderNotes(notesToDisplay = notes) {
-  notesList.replaceChildren();
-
+// Update the total note count.
+function updateNoteCount() {
   if (notes.length === 0) {
     noteCount.textContent = "You have no notes yet.";
   } else if (notes.length === 1) {
@@ -46,8 +46,13 @@ function renderNotes(notesToDisplay = notes) {
   } else {
     noteCount.textContent = `You have ${notes.length} notes.`;
   }
+}
 
-  // Show a message when a search has no matches.
+// Display notes.
+function renderNotes(notesToDisplay = notes) {
+  notesList.replaceChildren();
+  updateNoteCount();
+
   if (notesToDisplay.length === 0 && searchInput.value.trim() !== "") {
     const message = document.createElement("li");
     message.textContent = "No notes match your search.";
@@ -58,9 +63,7 @@ function renderNotes(notesToDisplay = notes) {
   notesToDisplay.forEach(function (note) {
     const noteCard = document.createElement("li");
 
-    noteCard.classList.add(
-      `category-${note.category.toLowerCase()}`
-    );
+    noteCard.classList.add(`category-${note.category.toLowerCase()}`);
 
     const noteText = document.createElement("p");
     noteText.textContent = note.text;
@@ -98,7 +101,7 @@ function renderNotes(notesToDisplay = notes) {
   });
 }
 
-// Return notes that match the search text.
+// Find notes matching the search text.
 function getFilteredNotes() {
   const searchTerm = searchInput.value.trim().toLowerCase();
 
@@ -107,20 +110,20 @@ function getFilteredNotes() {
   });
 }
 
-// Add a new note.
+// Add a note.
 noteForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
   const text = noteInput.value.trim();
 
   if (text === "") {
-    errorMessage.textContent = "Please enter a note before adding.";
+    errorMessage.textContent = "Please type a note first.";
     return;
   }
 
   if (text.length > 200) {
     errorMessage.textContent =
-      "Your note must be 200 characters or fewer.";
+      "Notes must be 200 characters or fewer.";
     return;
   }
 
@@ -146,5 +149,19 @@ searchInput.addEventListener("input", function () {
   renderNotes(getFilteredNotes());
 });
 
-// Display saved notes when the page loads.
+// BONUS: Delete all notes after confirmation.
+clearAllButton.addEventListener("click", function () {
+  if (confirm("Delete all notes?")) {
+    notes = [];
+
+    saveNotes();
+
+    searchInput.value = "";
+    errorMessage.textContent = "";
+
+    renderNotes();
+  }
+});
+
+// Display saved notes when the page opens.
 renderNotes();
